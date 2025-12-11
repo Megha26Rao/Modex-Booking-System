@@ -1,62 +1,74 @@
-1. High-Level System Architecture and Key Components
-Structure: The architecture follows a standard three-tier pattern (Client, Application, Database), with specialized components added for scale.
+# 🎬 Movie Ticket System: Concurrency-Safe Booking (Modex Assessment)
 
-Components:
+## Project Overview
+This project implements a scalable, full-stack Movie Ticket Booking System designed to meet the Modex assessment requirements. The core focus is the implementation of a robust **concurrency control mechanism** to ensure **zero overbooking** in high-traffic scenarios, leveraging PostgreSQL’s transactional features.
 
-Client Layer (Frontend): React/TypeScript application handling UI and user interactions.
+The application includes a clean, responsive UI and a dedicated Admin interface for content management.
 
-Application Layer (Backend): Multiple instances of the Node.js/Express application run behind a Load Balancer (e.g., NGINX) to distribute incoming user requests, ensuring high availability and handling large traffic volumes.
+## 🌟 Key Features Implemented
 
-Database Layer (PostgreSQL): PostgreSQL cluster used for transactional data integrity, especially critical during booking.
+* **Concurrency Control:** Guaranteed prevention of overbooking using Pessimistic Locking (`SELECT FOR UPDATE`) within database transactions.
+* **Full-Stack Functionality:** Admin can schedule shows, and users can browse, search, and book tickets instantly.
+* **User Experience (UX):** Includes a radiant, cinematic UI theme, client-side search filtering, and a separate Booking Status view for users.
+* **Multi-Seat Booking:** Users can specify the number of seats they wish to book in a single transaction.
+* **State Management:** Utilizes React Context API for global state (Shows) and Mock Authentication (User Profile).
 
-Caching Layer (Redis): Dedicated for fast access to read-heavy, non-transactional data.
+---
 
-Queue Layer (RabbitMQ/Kafka): Used to decouple critical operations from time-consuming background tasks.
+## 🛠️ Tech Stack & Architecture
 
-2. Concurrency Control Mechanisms (The Core Innovation)
-Problem: Concurrent requests attempting to book the last available seat lead to a "race condition" and overbooking.
+| Layer | Technology | Purpose / Notes |
+| :--- | :--- | :--- |
+| **Frontend** | React.js, TypeScript | Clean, modular UI components; enforces type safety and uses hooks for lifecycle management. |
+| **State Management** | React Context API | Manages global `Auth` state and `Show` data, minimizing prop drilling. |
+| **Backend API** | Node.js (Express.js) | High-performance, non-blocking API server for handling business logic and concurrency. |
+| **Database** | PostgreSQL | Selected for its superior support for complex transactions, integrity constraints, and built-in locking primitives (`SELECT FOR UPDATE`). |
+| **Deployment** | Railway (BE/DB), Vercel/Netlify (FE) | Utilized modern CI/CD tools for mandatory live deployment. |
 
-Solution Implemented: We rely on PostgreSQL's Transaction Isolation and Pessimistic Locking.
+---
 
-Database Transaction: The entire booking sequence (checking seat count, updating seat count, and recording the booking) is wrapped in a single database transaction, guaranteeing Atomicity (all steps succeed, or all fail).
+## 💻 Setup and Local Installation
 
-Pessimistic Locking (SELECT FOR UPDATE): Before checking the seat count, the transaction executes: SELECT total_seats FROM shows WHERE id = $1 FOR UPDATE. This command immediately locks the specific row being modified.
+### Prerequisites
+1.  Node.js (LTS version)
+2.  PostgreSQL Database (version 12+)
+3.  Postman (for API testing)
 
-Mechanism: Any subsequent transaction attempting to access that same row is forced to wait until the first transaction either commits (releases the lock) or rolls back. This serialization ensures that only one request can complete the seat check and update at a time, effectively preventing overbooking.
+### 1. Backend Setup (`/backend`)
+1.  **Clone Repository:** Navigate to the `/backend` folder.
+2.  **Install Dependencies:** `npm install`
+3.  **Database Configuration:**
+    * Create a database (e.g., `modex_booking`).
+    * Create a `.env` file based on your credentials:
+        ```ini
+        PORT=3000
+        DB_HOST=127.0.0.1
+        DB_USER=postgres
+        DB_PASSWORD=your_password
+        DB_DATABASE=modex_booking
+        ```
+    * Run the necessary SQL schema creation (if not already done): `ALTER TABLE shows ADD COLUMN theatre_name VARCHAR(255);` (plus the base `CREATE TABLE` commands).
+4.  **Run Server:** `node app.js` (The server should report successful DB connection and start on port 3000).
 
-3. Database Design and Scaling
-To scale PostgreSQL beyond a single primary server, the following strategies would be implemented:
+### 2. Frontend Setup (`/frontend`)
+1.  **Navigate:** Navigate to the `/frontend` folder.
+2.  **Install Dependencies:** `npm install`
+3.  **Configure API URL:** Ensure `API_BASE_URL` in `src/context/ShowContext.tsx` is set to your local backend:
+    ```typescript
+    const API_BASE_URL = 'http://localhost:3000/api'; 
+    ```
+4.  **Run Application:** `npm start` (The app will launch on a new port, e.g., 3001).
 
-Replication (Scaling Read Traffic):
+---
 
-We would set up a Primary-Replica model. The Primary database handles all critical write operations (new bookings, creating shows).
+## ⚙️ API Documentation
 
-Read Replicas (Secondary databases) handle all read traffic (listing available shows, viewing booking history). This shifts the vast majority of user traffic away from the critical Primary server.
+The following endpoints are functional (documentation provided as Postman Collection or Swagger link).
 
-Sharding (Scaling Write Traffic):
-
-For massive scale, the data would be partitioned across multiple database servers (Shards).
-
-Sharding Strategy: The most effective strategy for ticketing is often sharding by Show ID or date. All booking and seat data for a specific event would reside on a single shard, distributing the write load horizontally across the database cluster.
-
-4. Caching Strategy
-Caching is essential to reduce the load on the database during traffic spikes.
-
-Caching Layer: Redis is the preferred in-memory data store.
-
-Data Cached:
-
-Show Listings: The current list of available shows (GET /api/shows) is highly cacheable.
-
-Seat Maps: The layout and status of seats for non-critical, non-live views.
-
-Invalidation: The cache must be updated or invalidated only when a show's status (e.g., total seats remaining) changes due to a successful booking or an admin action.
-
-5. Message Queue Usage (Bonus)
-System: A message queue (like RabbitMQ or AWS SQS) would be used to decouple long-running or non-critical tasks from the fast transactional booking API.
-
-Tasks Decoupled:
-
-Email/SMS Notifications: The booking API succeeds and immediately sends a small message to the queue. A separate worker service consumes this message to send the notification, ensuring the user doesn't wait for the email process to finish.
-
-(Optional Feature) Booking Expiry: A message is queued when a booking enters PENDING status. A dedicated worker consumes this message after 2 minutes to check the status and mark it as FAILED if necessary.
+| Method | Endpoint | Description | Body Required |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/admin/shows` | Creates a new movie show/screening. | `name, startTime, totalSeats, theatreName` |
+| `GET` | `/api/shows` | Retrieves all available shows for the user dashboard. | None |
+| **`POST`** | **`/api/book`** | **Critical:** Reserves seats using a database transaction and locking mechanism. | `showId, userName, userPhone, seatCount` |
+| `GET` | `/api/bookings/:userId` | Retrieves a user's booking history (used for status view). | None (requires encoded user name in URL) |
+| `GET` | `/api/admin/bookings` | Retrieves all booking records (Admin view). | None |
