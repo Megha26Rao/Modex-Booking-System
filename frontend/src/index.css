@@ -1,0 +1,188 @@
+/* /frontend/src/index.css - Radiant Movie Aesthetic */
+
+/* --- GLOBAL BODY & FONT --- */
+body {
+  margin: 0;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  /* Deep, cinematic night-sky background */
+  background-color: #050816;
+  background-image: radial-gradient(circle at top left, #1f2937 0, transparent 55%),
+                    radial-gradient(circle at bottom right, #4b0082 0, transparent 55%),
+                    linear-gradient(135deg, #020617, #0b1020 40%, #020617 100%);
+  color: #e5e7eb; /* Light gray text for contrast */
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* --- HEADER (CINEMA BAR) --- */
+header {
+  background: linear-gradient(90deg, #020617, #111827, #1f2937) !important;
+  color: white;
+  padding: 16px 40px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+header h1 {
+  /* Bright cinematic color accent */
+  color: #fff7ed !important;
+  font-size: 1.9em !important;
+}
+
+header a {
+  color: #f0f0f0 !important;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+header a:hover {
+  color: #e74c3c !important; /* Red accent on hover */
+}
+
+/* --- MAIN CONTENT & CARD STYLES --- */
+main {
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Show Card Styles (Light interior for high contrast) */
+.show-card {
+  background: radial-gradient(circle at top left, #1f2937, #020617);
+  border: 1px solid #334155;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  color: #e5e7eb; /* Light text on dark card */
+}
+
+.show-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Input Fields */
+input[type="text"], input[type="number"], input[type="datetime-local"] {
+  padding: 12px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+  background: #333; /* Darker input fields */
+  color: #fff;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="datetime-local"]:focus,
+input[type="tel"]:focus,
+select:focus {
+  outline: none;
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 1px #e74c3c;
+}
+
+/* --- BUTTON STYLES (Accents) --- */
+button, .primary-link {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+/* Primary Button (Booking/Call to action) - Red Accent */
+.btn-primary { 
+  color: rgb(241, 222, 222);
+  font-size:15px;
+  background-color: #ce1010;
+}
+.btn-primary:hover {
+  background: #c0392b;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* Disabled Button */
+.btn-disabled {
+  background: #555;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+/* --- SEAT MAP --- */
+.seat-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 8px;
+  justify-items: center;
+}
+
+.seat {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.seat-available {
+  background: #22c55e;
+  color: #022c22;
+}
+
+.seat-selected {
+  background: #f97316;
+  color: #111827;
+}
+
+.seat-booked {
+  background: #4b5563;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.seat:hover:not(.seat-booked) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+}
+
+table {
+  border-collapse: collapse;
+}
+
+th, td {
+  border: none;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
